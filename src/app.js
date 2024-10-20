@@ -2,8 +2,9 @@ import express from "express"
 import cors from "cors"
 import cookieParser from "cookie-parser"
 
-const app = express()
+const app = express()// Create an Express application instance.
 
+// Use CORS middleware to allow cross-origin requests
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
     credential: true
