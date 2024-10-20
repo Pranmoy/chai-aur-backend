@@ -17,4 +17,12 @@ app.use(cookieParser())
 
 
 
+//routes
+//here we have used an undefined import name, it is because we have used default in exporting user.routes.js
+import userRouter from "./routes/user.routes.js"
+
+//routes declarations
+app.use("/api/v1/users", userRouter)
+
+
 export { app } 
