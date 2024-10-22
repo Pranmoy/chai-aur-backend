@@ -41,8 +41,6 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
-      minlength: 8,
-      select: false,
     },
     refershToken: {
       type: String,
@@ -51,8 +49,7 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function (next) {
-  //check if the password id modified
+//check if the password id modified
   /*if(this.isModified("password")){
      // hash the password with salt round 10
         try{ this.password = await bcrypt.hash(this.password, 10)
@@ -63,14 +60,12 @@ userSchema.pre("save", async function (next) {
      }else{
         next(); // procced if the password wasn't modified
      }*/
-  try {
+
+userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
 
     this.password = await bcrypt.hash(this.password, 10);
     next();
-  } catch (err) {
-    next(err);
-  }
 });
 
 userSchema.methods.isPasswordCorrect = async function (password) {
