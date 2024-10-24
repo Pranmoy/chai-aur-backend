@@ -291,6 +291,8 @@ const updateUserAvatar = asynchandeler(async (req, res) => {
     throw new ApiError(400, "Error while uploading on avatar");
   }
 
+  //insert the delete function
+
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
@@ -329,6 +331,8 @@ const updateUserCoverImage = asynchandeler(async (req, res) => {
   if (!coverImageLocalPath) {
     throw new ApiError(400, "Cover image file id missing");
   }
+
+  //insert the delete function
   const coverImage = await uploadOnCloudinary(avatatrLocalPath);
 
   if (!coverImage.url) {
@@ -480,7 +484,6 @@ export {
   getCurrentUser,
   updateAccountDetails,
   updateUserAvatar,
-  deletingOldAvatar,
   updateUserCoverImage,
   getUserChannelProfile,
   getWatchHistory
