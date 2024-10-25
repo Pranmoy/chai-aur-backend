@@ -8,6 +8,8 @@ import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { response } from "express";
 
+
+
 const generateAccesAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -119,7 +121,7 @@ const loginUser = asynchandeler(async (req, res) => {
 
   const { email, username, password } = req.body;
 
-  if (!username && !email) {
+  if (!(username || email)) {
     throw new ApiError(400, "username or email is required");
   } //if you want both
 
@@ -169,8 +171,8 @@ const logoutUser = asynchandeler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: {
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1, // this removes the field from document
       },
     },
     { new: true }
@@ -238,16 +240,21 @@ const changeCurrentPassword = asynchandeler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
   const user = await User.findById(req.user?._id);
+  console.log(user)// we are getting the user(no error)
+  // const bcrypt = require('bcrypt');
   const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+  console.log(oldPassword) //the inputed password
+  console.log(isPasswordCorrect); //false
 
   if (!isPasswordCorrect) {
     throw new ApiError(400, "Invaild old password");
   }
 
   user.password = newPassword;
-  user.save({ validateBeforeSave: false });
+  //save the user without validation errors
+  user.save({validateBeforeSave: false });
 
-  return response
+  return res
     .status(200)
     .json(new ApiResponse(200, {}, "password save successfuly"));
 });
@@ -392,7 +399,7 @@ const getUserChannelProfile = asynchandeler(async(req, res)=>{
         },
         isSubscribed:{
           $cond: {
-            if: {$in: [req.user?._id, "subscribers.subscriber"]},
+            if: {$in: [req.user?._id, "$subscribers.subscriber"]},//This properly references the field in the document.
             then: true,
             else: false
           }
@@ -433,14 +440,14 @@ const getWatchHistory = asynchandeler(async(req, res)=>{
     },
     {
       $lookup:{
-        field: "videos",
+        from: "videos",
         localField: "watchHistory",
         foreignField: "_id",
         as: "watchHistory", 
         pipeline:[
           {
             $lookup:{
-              field: "users",
+              from: "users",
               localField: "owner",
               foreignField: "_id",
               as: "owner",
@@ -458,7 +465,7 @@ const getWatchHistory = asynchandeler(async(req, res)=>{
           {
             $addFields: {
               owner: {
-                $first :"owner"
+                $first :"$owner"
               }
             }
           }
